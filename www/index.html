@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>App Monaca</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .background-glow {
+            position: fixed;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(168, 85, 247, 0.2) 50%, transparent 70%);
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            filter: blur(50px);
+            z-index: 0;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            z-index: 1;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 32px 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .logo-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 24px;
+            color: #ffffff;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+        }
+
+        .brand-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .brand-header p {
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            color: #64748b;
+            font-size: 1rem;
+            transition: color 0.2s;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .input-wrapper input:focus ~ .input-icon {
+            color: #818cf8;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 4px;
+        }
+
+        .options-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            font-size: 0.85rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
+        .remember-me input {
+            accent-color: #6366f1;
+            width: 16px;
+            height: 16px;
+        }
+
+        .forgot-pass {
+            color: #818cf8;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+            transition: transform 0.15s ease, opacity 0.2s;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .divider span {
+            padding: 0 12px;
+        }
+
+        .social-login {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn-social {
+            flex: 1;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-social:active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .switch-screen-link {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .switch-screen-link a {
+            color: #818cf8;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* --- Estilos da Tela Home --- */
+        .home-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .user-info h3 {
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .user-info p {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+        .stat-card i {
+            font-size: 1.2rem;
+            color: #818cf8;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .val {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .stat-card .lbl {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 12px;
+        }
+
+        .action-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .action-item:active {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .action-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-info i {
+            color: #a855f7;
+        }
+
+        .action-info span {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-glow"></div>
+    
+    <main class="app-container">
+    
+        <div class="card">
+            
+        
+            <section id="screenLogin" class="screen active">
+                <div class="brand-header">
+                    <div class="logo-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h2>Bem-vindo</h2>
+                    <p>Insira suas credenciais para acessar</p>
+                </div>
+
+                <form id="loginForm" novalidate>
+                    <div class="input-group">
+                        <label for="loginEmail">E-mail ou Usuário</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-envelope input-icon"></i>
+                            <input type="email" id="loginEmail" placeholder="seu@email.com" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="loginPassword">Senha</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="loginPassword" placeholder="••••••••" required>
+                            <button type="button" class="toggle-password" onclick="togglePass('loginPassword', 'eyeIconLogin')">
+                                <i class="fa-solid fa-eye" id="eyeIconLogin"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="options-row">
+                        <label class="remember-me">
+                            <input type="checkbox" id="remember">
+                            <span>Lembrar de mim</span>
+                        </label>
+                        <a href="#" class="forgot-pass">Esqueceu a senha?</a>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="btnLogin">
+                        <span class="btn-text">Entrar</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </form>
+
+                <div class="divider">
+                    <span>ou entre com</span>
+                </div>
+
+                <div class="social-login">
+                    <button type="button" class="btn-social"><i class="fa-brands fa-google"></i></button>
+                    <button type="button" class="btn-social"><i class="fa-brands fa-apple"></i></button>
+                </div>
+
+                <p class="switch-screen-link">
+                    Não tem uma conta? <a onclick="navigateTo('screenRegister')">Cadastre-se</a>
+                </p>
+            </section>
+
+           
+            <section id="screenRegister" class="screen">
+                <div class="brand-header">
+                    <div class="logo-icon">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+                    <h2>Criar Conta</h2>
+                    <p>Preencha os dados abaixo para começar</p>
+                </div>
+
+                <form id="registerForm" novalidate>
+                    <div class="input-group">
+                        <label for="regName">Nome Completo</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user input-icon"></i>
+                            <input type="text" id="regName" placeholder="Seu nome" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="regEmail">E-mail</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-envelope input-icon"></i>
+                            <input type="email" id="regEmail" placeholder="seu@email.com" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="regPassword">Senha</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="regPassword" placeholder="••••••••" required>
+                            <button type="button" class="toggle-password" onclick="togglePass('regPassword', 'eyeIconReg')">
+                                <i class="fa-solid fa-eye" id="eyeIconReg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="btnRegister" style="margin-top: 24px;">
+                        <span class="btn-text">Cadastrar</span>
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                </form>
+
+                <div class="divider"></div>
+
+                <p class="switch-screen-link">
+                    Já possui uma conta? <a onclick="navigateTo('screenLogin')">Faça Login</a>
+                </p>
+            </section>
+
+          
+            <section id="screenHome" class="screen">
+                <div class="home-header">
+                    <div class="user-profile">
+                        <div class="avatar" id="homeAvatar">U</div>
+                        <div class="user-info">
+                            <h3 id="homeUserName">Usuário</h3>
+                            <p id="homeUserEmail">usuario@email.com</p>
+                        </div>
+                    </div>
+                    <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fa-solid fa-wallet"></i>
+                        <div class="val">R$ 1.250</div>
+                        <div class="lbl">Saldo Geral</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <div class="val">+24%</div>
+                        <div class="lbl">Rendimento</div>
+                    </div>
+                </div>
+
+                <h4 class="section-title">Ações Rápidas</h4>
+                
+                <div class="action-list">
+                    <div class="action-item">
+                        <div class="action-info">
+                            <i class="fa-solid fa-bell"></i>
+                            <span>Notificações</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem; color: #64748b;"></i>
+                    </div>
+                    <div class="action-item">
+                        <div class="action-info">
+                            <i class="fa-solid fa-sliders"></i>
+                            <span>Configurações</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem; color: #64748b;"></i>
+                    </div>
+                    <div class="action-item">
+                        <div class="action-info">
+                            <i class="fa-solid fa-circle-question"></i>
+                            <span>Suporte</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem; color: #64748b;"></i>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+      
+        function navigateTo(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+       
+        function togglePass(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            const isPassword = input.getAttribute('type') === 'password';
+            
+            input.setAttribute('type', isPassword ? 'text' : 'password');
+            icon.className = isPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+        }
+
+ 
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!email || !password) {
+                alert('Preencha e-mail e senha.');
+                return;
+            }
+
+            const btn = document.getElementById('btnLogin');
+            const originalText = btn.querySelector('.btn-text').textContent;
+            btn.querySelector('.btn-text').textContent = 'Entrando...';
+
+            setTimeout(() => {
+                btn.querySelector('.btn-text').textContent = originalText;
+                
+              
+                const username = email.split('@')[0];
+                document.getElementById('homeUserName').textContent = username;
+                document.getElementById('homeUserEmail').textContent = email;
+                document.getElementById('homeAvatar').textContent = username.charAt(0).toUpperCase();
+
+                navigateTo('screenHome');
+            }, 800);
+        });
+
+     
+        document.getElementById('registerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+
+            if (!name || !email || !password) {
+                alert('Preencha todos os campos do cadastro.');
+                return;
+            }
+
+            const btn = document.getElementById('btnRegister');
+            const originalText = btn.querySelector('.btn-text').textContent;
+            btn.querySelector('.btn-text').textContent = 'Criando conta...';
+
+            setTimeout(() => {
+                btn.querySelector('.btn-text').textContent = originalText;
+                
+              
+                document.getElementById('homeUserName').textContent = name;
+                document.getElementById('homeUserEmail').textContent = email;
+                document.getElementById('homeAvatar').textContent = name.charAt(0).toUpperCase();
+
+                navigateTo('screenHome');
+            }, 800);
+        });
+
+     
+        function logout() {
+            document.getElementById('loginForm').reset();
+            document.getElementById('registerForm').reset();
+            navigateTo('screenLogin');
+        }
+    </script>
+</body>
+</html>
